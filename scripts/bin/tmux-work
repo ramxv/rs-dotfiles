@@ -1,0 +1,31 @@
+#!/bin/bash
+SESSION="work"
+PROJECT="${TMUX_WORK_PROJECT:-}"
+
+if [ -z "$PROJECT" ] || [ ! -d "$PROJECT" ]; then
+	echo "Error: TMUX_WORK_PROJECT is not set or points to a missing directory."
+	echo ""
+	echo "Set it in your shell config (e.g. ~/.bashrc.local):"
+	echo "  export TMUX_WORK_PROJECT=\"\$HOME/path/to/your/project\""
+	exit 1
+fi
+
+tmux has-session -t "$SESSION" 2>/dev/null && tmux attach -t "$SESSION" && exit
+
+tmux new-session -d -s "$SESSION" -c "$PROJECT" -n code
+tmux split-window -h -p 30 -t "$SESSION":code -c "$PROJECT"
+
+tmux new-window -t "$SESSION" -n services -c "$PROJECT"
+tmux split-window -h -t "$SESSION":services -c "$PROJECT"
+tmux split-window -v -p 40 -t "$SESSION":services.0 -c "$PROJECT"
+
+tmux new-window -t "$SESSION" -n db -c "$PROJECT"
+tmux split-window -h -p 35 -t "$SESSION":db -c "$PROJECT"
+
+tmux new-window -t "$SESSION" -n git -c "$PROJECT"
+tmux send-keys -t "$SESSION":git 'lazygit' C-m
+
+tmux new-window -t "$SESSION" -n scratch -c "$PROJECT"
+
+tmux select-window -t "$SESSION":code
+tmux attach -t "$SESSION"

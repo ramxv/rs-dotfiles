@@ -1,0 +1,195 @@
+# If not running interactively, don't do anything (leave this at the top of this file)
+
+[[ $- != *i* ]] && return
+
+# All the default Omarchy aliases and functions
+# (don't mess with these directly, just overwrite them here!)
+# source ~/.local/share/omarchy/default/bash/rc
+
+# ── Git Completion ────────────────────────────────────────────────
+if [ -f /usr/share/git/completion/git-completion.bash ]; then
+	. /usr/share/git/completion/git-completion.bash
+else
+	echo "WARNING: .git-completion.bash is missing"
+fi
+
+# ── History ──────────────────────────────────────────────
+HISTSIZE=10000
+HISTFILESIZE=20000
+HISTCONTROL=ignoreboth
+
+# ── General Behavior ────────────────────────────────
+shopt -s autocd       # escribe un directorio y entra solo
+shopt -s cdspell      # corrige typos en cd (ej: cd Deskop → Desktop)
+shopt -s checkwinsize # actualiza LINES/COLUMNS al redimensionar
+shopt -s globstar     # habilita ** para rutas recursivas
+shopt -s histappend   # append en lugar de overwrite al salir
+
+
+# ── Prompt ────────────────────────────────────────────────
+
+git_branch() {
+	git rev-parse --abbrev-ref HEAD 2>/dev/null
+}
+
+git_status_branch() {
+	local gitbranchstatus
+	gitbranchstatus=$(git status -sb 2>/dev/null | head -1 | grep -o '\[.*\]')
+	[[ -z "$gitbranchstatus" ]] && return
+	echo "$gitbranchstatus"
+}
+
+git_branch_changes() {
+	local gitstatus
+	gitstatus=$(git status -s 2>/dev/null) || return
+	[[ -z "$gitstatus" ]] && return
+
+	local untracked modified added deleted counts=""
+	untracked=$(echo "$gitstatus" | grep -c '^??')
+	modified=$(echo "$gitstatus" | grep -c '^ M')
+	added=$(echo "$gitstatus" | grep -c '^A')
+	deleted=$(echo "$gitstatus" | grep -c '^ D')
+
+	[[ $untracked -gt 0 ]] && counts+="${PROMPT_GIT_UNTRACKED}[${untracked}?]${PROMPT_RESET}"
+	[[ $modified  -gt 0 ]] && counts+="${PROMPT_GIT_MODIFIED}[${modified}~]${PROMPT_RESET}"
+	[[ $added     -gt 0 ]] && counts+="${PROMPT_GIT_ADDED}[${added}+]${PROMPT_RESET}"
+	[[ $deleted   -gt 0 ]] && counts+="${PROMPT_GIT_DELETED}[${deleted}-]${PROMPT_RESET}"
+
+	echo "$counts"
+}
+
+# ── Prompt Themes ─────────────────────────────────────────
+PROMPT_THEME_FILE="$HOME/.config/bash/theme"
+PROMPT_RESET=$'\001\033[0m\002'
+
+prompt_theme() {
+	local name="${1:-rose-pine}"
+	case "$name" in
+		rose-pine)
+			PROMPT_USER=$'\001\033[38;2;100;185;215m\002'
+			PROMPT_HOST=$'\001\033[38;2;156;207;216m\002'
+			PROMPT_DIR=$'\001\033[38;2;196;167;231m\002'
+			PROMPT_BRANCH=$'\001\033[38;2;246;193;119m\002'
+			PROMPT_GIT_UNTRACKED=$'\001\033[38;2;156;207;216m\002'
+			PROMPT_GIT_MODIFIED=$'\001\033[38;2;196;167;231m\002'
+			PROMPT_GIT_ADDED=$'\001\033[38;2;49;116;143m\002'
+			PROMPT_GIT_DELETED=$'\001\033[38;2;235;111;146m\002'
+			;;
+		gruvbox)
+			PROMPT_USER=$'\001\033[38;2;184;187;38m\002'
+			PROMPT_HOST=$'\001\033[38;2;131;165;152m\002'
+			PROMPT_DIR=$'\001\033[38;2;250;189;47m\002'
+			PROMPT_BRANCH=$'\001\033[38;2;254;128;25m\002'
+			PROMPT_GIT_UNTRACKED=$'\001\033[38;2;131;165;152m\002'
+			PROMPT_GIT_MODIFIED=$'\001\033[38;2;211;134;155m\002'
+			PROMPT_GIT_ADDED=$'\001\033[38;2;184;187;38m\002'
+			PROMPT_GIT_DELETED=$'\001\033[38;2;251;73;52m\002'
+			;;
+		catppuccin)
+			PROMPT_USER=$'\001\033[38;2;166;227;161m\002'
+			PROMPT_HOST=$'\001\033[38;2;137;220;235m\002'
+			PROMPT_DIR=$'\001\033[38;2;203;166;247m\002'
+			PROMPT_BRANCH=$'\001\033[38;2;249;226;175m\002'
+			PROMPT_GIT_UNTRACKED=$'\001\033[38;2;137;220;235m\002'
+			PROMPT_GIT_MODIFIED=$'\001\033[38;2;203;166;247m\002'
+			PROMPT_GIT_ADDED=$'\001\033[38;2;166;227;161m\002'
+			PROMPT_GIT_DELETED=$'\001\033[38;2;243;139;168m\002'
+			;;
+		nord)
+			PROMPT_USER=$'\001\033[38;2;163;190;140m\002'
+			PROMPT_HOST=$'\001\033[38;2;136;192;208m\002'
+			PROMPT_DIR=$'\001\033[38;2;180;142;173m\002'
+			PROMPT_BRANCH=$'\001\033[38;2;235;203;139m\002'
+			PROMPT_GIT_UNTRACKED=$'\001\033[38;2;136;192;208m\002'
+			PROMPT_GIT_MODIFIED=$'\001\033[38;2;180;142;173m\002'
+			PROMPT_GIT_ADDED=$'\001\033[38;2;163;190;140m\002'
+			PROMPT_GIT_DELETED=$'\001\033[38;2;191;97;106m\002'
+			;;
+		tokyo-night)
+			PROMPT_USER=$'\001\033[38;2;158;206;106m\002'
+			PROMPT_HOST=$'\001\033[38;2;125;207;255m\002'
+			PROMPT_DIR=$'\001\033[38;2;187;154;247m\002'
+			PROMPT_BRANCH=$'\001\033[38;2;224;175;104m\002'
+			PROMPT_GIT_UNTRACKED=$'\001\033[38;2;125;207;255m\002'
+			PROMPT_GIT_MODIFIED=$'\001\033[38;2;187;154;247m\002'
+			PROMPT_GIT_ADDED=$'\001\033[38;2;158;206;106m\002'
+			PROMPT_GIT_DELETED=$'\001\033[38;2;247;118;142m\002'
+			;;
+		list)
+			echo "Available themes: rose-pine, gruvbox, catppuccin, nord, tokyo-night"
+			return 0
+			;;
+		*)
+			echo "Theme '$name' doesn't exist. Use: prompt_theme list" >&2
+			return 1
+			;;
+	esac
+
+	PS1="${PROMPT_USER}\u${PROMPT_RESET}@${PROMPT_HOST}\h${PROMPT_RESET} ${PROMPT_DIR}\W${PROMPT_RESET}"
+	PS1+='$(branch=$(git_branch); [ -n "$branch" ] && echo "['"${PROMPT_BRANCH}"'$branch'"${PROMPT_RESET}"']")'
+	PS1+='$(branchstatus=$(git_status_branch); [[ -n "$branchstatus" ]] && echo "'"${PROMPT_BRANCH}"'$branchstatus'"${PROMPT_RESET}"'")'
+	PS1+='$(counts=$(git_branch_changes); [[ -n "$counts" ]] && echo "$counts")'
+	PS1+="${PROMPT_RESET} \$ "
+
+	if [[ ! -r "$PROMPT_THEME_FILE" ]] || [[ "$(< "$PROMPT_THEME_FILE")" != "$name" ]]; then
+		mkdir -p "$(dirname "$PROMPT_THEME_FILE")"
+		echo "$name" > "$PROMPT_THEME_FILE"
+	fi
+}
+
+if [[ -r "$PROMPT_THEME_FILE" ]]; then
+	prompt_theme "$(<"$PROMPT_THEME_FILE")"
+else
+	prompt_theme rose-pine
+fi
+
+
+# ── Aliases ───────────────────────────────────────────────
+alias ls='ls --color=auto'
+alias ll='ls -lah --color=auto'
+alias la='ls -A --color=auto'
+alias l='ls -CF --color=auto'
+alias grep='grep --color=auto'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias clr='clear'
+alias mkdir='mkdir -p'
+alias bconf="nvim ~/.bashrc"
+alias sbash="source ~/.bashrc"
+alias zshconfig="nvim ~/.zshrc"
+alias ohmyzsh="nvim ~/.oh-my-zsh"
+alias ff="fastfetch"
+alias pt="prompt_theme"
+alias ptl="prompt_theme list"
+
+# ── Git ───────────────────────────────────────────────────
+alias g='git'
+alias gs='git status'
+alias ga='git add .'
+alias gc='git commit -m'
+alias gps='git push'
+alias gpl='git pull'
+alias gl='git log --oneline --graph --decorate'
+alias gwl='git worktree list'
+alias gwa='git worktree add'
+alias gwr='git worktree remove'
+alias gwm='git worktree move'
+
+# ── tmux ──────────────────────────────────────────────────
+alias tn='tmux new -t'
+alias ta='tmux a -t'
+alias td='tmux detach-client'
+
+# ── Editor on SSH connection ──────────────────────────────
+if [[ -n $SSH_CONNECTION ]]; then
+	export EDITOR='vim'
+else
+	export EDITOR='nvim'
+fi
+
+export PATH="$HOME/.local/bin:$PATH"
+
+# ── Local overrides (not tracked) ─────────────────────────
+# Machine-specific tooling (zoxide, fnm, nvm, pnpm), private aliases,
+# VPN, SSH agent setup, etc. live in ~/.bashrc.local
+[ -f ~/.bashrc.local ] && source ~/.bashrc.local

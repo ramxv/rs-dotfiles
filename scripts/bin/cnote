@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+
+function cnote {
+	local notetype
+	local dirnote
+	local path
+
+	notetype=$1
+	dirnote="$(date +"%d-%b-%Y")"
+	path=$(pwd)
+
+	[[ $# -eq 0 ]] && usage
+
+	[[ $1 == "-h" || $1 == "--help" ]] && usage
+
+	if [[ $notetype == -* ]]; then
+		echo "Error: unknown option '$notetype'"
+		echo "See cnote -h, cnote --help for more information"
+		exit 1
+	fi
+
+	if [[ ! -e "$path/$dirnote" ]]; then
+		mkdir "$path/$dirnote"
+	fi
+
+	cd "$path/$dirnote" || { echo "$dirnote does not exist" exit 1; }
+
+	if [[ -f "$path/$dirnote/note-$notetype".md ]]; then
+		echo "Error filename: note-$notetype.md already exist."
+		echo "Please create another note with different type name"
+		echo "See cnote -h, cnote --help for more information"
+		exit 1
+	else
+
+		if [[ -z $1 ]]; then
+			echo "There is no argument for the note type or invalid type argument"
+			echo "See cnote -h, cnote --help for more information"
+			return 1
+		fi
+
+		notefullname="note-$notetype".md
+		touch "$notefullname"
+
+		template "$notetype" >>"$notefullname"
+		$EDITOR "$notefullname"
+	fi
+
+}
+
+usage() {
+	echo "Usage: cnote <notetype>"
+	echo ""
+	echo "Creates a markdown note inside a date-organized folder (DD-Mon-YYYY)."
+	echo ""
+	echo "Arguments:"
+	echo "  <notetype>        note type and filename (work, meeting, study, or any name)"
+	echo ""
+	echo "Options:"
+	echo "  -h, --help        show this help message"
+	echo ""
+	echo "Examples:"
+	echo "  cnote daily"
+	echo "  cnote sprint"
+	echo "  cnote standup"
+	echo "  cnote algorithms"
+	exit 1
+}
+
+template() {
+	local notetype=$1
+	local date
+	date=$(date +"%d-%m-%Y")
+
+	case "$notetype" in
+	work)
+		echo "# Work — $date"
+		echo ""
+		echo "## Tasks"
+		echo "- [ ] "
+		echo ""
+		echo "## Notes"
+		;;
+	meeting)
+		echo "# Meeting — $date"
+		echo ""
+		echo "## Context"
+		echo "- "
+		echo ""
+		echo "## Action Items"
+		echo "- [ ] "
+		echo ""
+		;;
+	study | university | school)
+		echo "# Study — $date"
+		echo ""
+		echo "## Summary"
+		echo ""
+		echo "## Questions"
+		echo "- "
+		echo ""
+		;;
+	dump | *)
+		echo "# ${notetype} — $date"
+		echo ""
+		;;
+	esac
+}
+
+cnote "$@"
