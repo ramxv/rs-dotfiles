@@ -38,7 +38,6 @@ echo "Installing dotfiles from $DOTFILES"
 link nvim       .config/nvim
 link alacritty  .config/alacritty
 link fastfetch  .config/fastfetch
-link suckless   .config/suckless
 
 # Files in $HOME
 link bash/bashrc      .bashrc
