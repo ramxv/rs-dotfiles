@@ -11,7 +11,6 @@ My personal Linux configuration files. Installed via a simple `install.sh` that 
 ├── fastfetch/   # System info display             -> ~/.config/fastfetch/
 ├── nvim/        # Neovim (LazyVim base)           -> ~/.config/nvim/
 ├── scripts/     # Personal scripts                -> ~/.local/bin/
-├── suckless/    # dwm, st, dmenu, dwmblocks       -> ~/.config/suckless/
 ├── tmux/        # Terminal multiplexer            -> ~/.tmux.conf, ~/.tmux/plugins
 ├── zsh/         # Z shell config (optional)       -> ~/.zshrc
 └── install.sh   # Symlink installer
@@ -28,17 +27,6 @@ cd ~/dotfiles
 `install.sh` creates symlinks from this repo into your home directory. If a target already exists as a real file (not a symlink), it is moved to `~/.dotfiles-backup-YYYYMMDD-HHMMSS/` before being replaced — your existing configs are never silently overwritten.
 
 The script is idempotent: re-running it just refreshes the symlinks.
-
-## Suckless programs
-
-The `suckless/` configs require compiling. After running `install.sh`:
-
-```bash
-cd ~/.config/suckless/dwm && sudo make clean install
-cd ~/.config/suckless/st && sudo make clean install
-cd ~/.config/suckless/dmenu && sudo make clean install
-cd ~/.config/suckless/dwmblocks && sudo make clean install
-```
 
 ## Uninstalling
 
